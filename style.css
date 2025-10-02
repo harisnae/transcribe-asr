@@ -1,0 +1,117 @@
+/* --------------------------------------------------------------
+   Base page styling
+   -------------------------------------------------------------- */
+body{
+  font-family:system-ui,Segoe UI,Roboto,Arial;
+  /*margin:18px;*/
+  max-width:900px;
+  margin: 0 auto;          /* ← center the container */
+  padding: 18px;           /* ← keep the spacing on all sides */
+}
+input,textarea,button,select{
+  width:100%;
+  padding:10px;
+  margin:8px 0;
+  box-sizing:border-box;
+}
+pre{
+  background:#f6f7f8;
+  padding:12px;
+  border-radius:6px;
+  white-space:pre-wrap;
+}
+audio{width:100%;margin-top:12px;}
+
+/* --------------------------------------------------------------
+   Row layout – flex container for button rows
+   -------------------------------------------------------------- */
+.row{display:flex;gap:0.75rem;}
+.col{flex:1;}
+
+/* --------------------------------------------------------------
+   Layout container – column flex with a uniform vertical rhythm
+   -------------------------------------------------------------- */
+#app{display:flex;flex-direction:column;gap:1.5rem;}
+
+/* --------------------------------------------------------------
+   .field – keeps a label and its following element(s) together
+   -------------------------------------------------------------- */
+.field{display:flex;flex-direction:column;gap:0.2rem;}
+.field input,
+.field select,
+.field textarea,
+.field button{margin-top:0;margin-bottom:0;}
+
+/* --------------------------------------------------------------
+   Scroll‑able boxes
+   -------------------------------------------------------------- */
+#transcript,#log{
+  max-height:calc(1.2em*10);
+  overflow-y:auto;
+  white-space:pre-wrap;
+}
+
+/* --------------------------------------------------------------
+   Generation‑parameter controls – vertical stack
+   -------------------------------------------------------------- */
+.gen‑params{
+  display:flex;
+  flex-direction:column;
+  gap:0.5rem;
+}
+
+/* --------------------------------------------------------------
+   Tooltip styling (data‑tooltip)
+   -------------------------------------------------------------- */
+label.has-tooltip{
+  position:relative;               /* keep label positioned for layout */
+}
+
+/* the clickable info‑icon – now the positioning anchor */
+.info-icon{
+  position:relative;               /* needed for ::after */
+  margin-left:4px;
+  font-size:0.9em;
+  cursor:pointer;
+}
+
+/* hide tooltip by default – attached to the icon */
+.info-icon::after{
+  content: attr(data-tooltip);
+  position: absolute;
+  top: -1.8rem;               /* same vertical offset */
+  left: 50%;                  /* anchor to the centre of the icon */
+  transform: translateX(-50%);/* centre the tooltip horizontally */
+  background:#333;
+  color:#fff;
+  padding:4px 6px;
+  border-radius:4px;
+
+  /* ---- minimal changes ---- */
+  display: block;
+  width: max-content;                     /* size to full text */
+  max-width: min(300px, calc(100vw - 2rem));/* never exceed viewport */
+  white-space: normal;                    /* normal wrapping */
+  /* ---------------------- */
+
+  font-size:0.85rem;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .2s;
+  z-index:10;
+}
+
+/* show tooltip when the icon has .show */
+.info-icon.show::after{
+  opacity:1;
+  pointer-events:auto;
+}
+
+/* mobile – tooltip appears above the icon */
+@media(max-width:600px){
+  .info-icon::after{
+    top:auto;
+    bottom:100%;
+  }
+}
+

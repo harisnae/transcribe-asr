@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+
+  <meta charset="utf-8">
+  <title>Transcribe ASR</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  
+  <!-- 1. Link the external stylesheet -->
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" type="module" defer></script>
+  
+</head>
+
+<body>
+
+<h2>Transcribe ASR</h2>
+<p>Client‑Side Automatic Speech Recognition using Hugging Face Transformers and ONNX‑Optimized Whisper Models</p>
+
+<div id="app">
+  <!-- ==== Model selection ==== -->
+  <div class="field">
+    <label class="has-tooltip">
+      Select Hugging Face Model
+      <span class="info-icon" tabindex="0"
+            data-tooltip="Choose the Whisper model you want to run (e.g., tiny, base, English‑only, or language‑specific).">🛈</span>
+    </label>
+    <select id="modelSelect">
+      <option value="harisnaeem/whisper-tiny-ONNX">Whisper‑Tiny‑ONNX (Multilingual)</option>
+      <option value="harisnaeem/whisper-base-ONNX">Whisper‑Base‑ONNX (Multilingual)</option>
+      <option value="harisnaeem/whisper-tiny.en-ONNX">Whisper‑Tiny.en‑ONNX (English)</option>
+      <option value="harisnaeem/whisper-base.en-ONNX">Whisper‑Base.en‑ONNX (English)</option>
+    </select>
+  </div>
+
+  <div class="row">
+    <div class="col"><button id="loadBtn">Load model (speech-to-text)</button></div>
+    <div class="col">
+      <select id="dtypeSelect">
+        <option value="fp32">fp32</option>
+        <option value="fp16">fp16</option>
+  <!--  <option value="int8">int8</option> --> <!-- ==== Removed this quantization ==== -->
+        <option value="q4">q4</option>
+        <option value="q4f16">q4f16</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- ==== Audio upload (Browse + Sample) ==== -->
+  <div class="field">
+    <label class="has-tooltip">
+      Upload or Select media file
+      <span class="info-icon" tabindex="0"
+            data-tooltip="Pick a local audio/video file or load one of the provided samples for transcription.">🛈</span>
+    </label>
+    <div class="row">
+      <div class="col"><input type="file" id="audioFile" accept="audio/*"></div>
+      <div class="col">
+        <select id="sampleSelect">
+          <option value="">Select sample …</option>
+            <!-- English‑language samples -->
+          <option value="Angular_EN">angular_momentum_english.m4a</option>
+          <option value="Lifetime_EN">bh_lifetime_english.m4a</option>
+          <option value="Physics_EN">bh_physics_english.m4a</option>
+          <option value="Blackhole_EN">blackhole_english.m4a</option>
+          <option value="Centrifugal_EN">centrifugal_force_english.m4a</option>
+          <option value="Charged_EN">charged_ball_english.m4a</option>
+          <option value="Function_EN">function_english.m4a</option>
+          <option value="Hawking_EN">hawking_english.m4a</option>
+          <option value="Imaginary_EN">imaginary_time_english.m4a</option>
+          <option value="Kerr_EN">kerr_bh_english.m4a</option>
+          <!-- German‑language samples -->
+          <option value="Erixx_DE">erixx_german.m4a</option>
+          <option value="Menschenwürde_DE">menschenwürde_german.m4a</option>
+          <option value="Vision4i_DE">vision4i_2_german.m4a</option>
+          <option value="Vision4i2_DE">vision4i_german.m4a</option>
+          <!-- Korean sample -->
+          <option value="Korean_KR">korean.m4a</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <audio id="player" controls></audio>
+
+  <!-- ==== Language selection ==== -->
+  <div class="field">
+    <label class="has-tooltip">
+      Select language
+      <span class="info-icon" tabindex="0"
+            data-tooltip="If the audio is not spoken in English, choose that language to get a transcription in original language.">🛈</span>
+    </label>
+    
+    <div class="row">                     <!-- ← NEW: wrap language & task in a flex row -->
+      <div class="col">
+    <select id="langSelect">
+      <option value="en" selected>English</option>
+      <option value="zh">Chinese</option>
+      <option value="de">German</option>
+      <option value="es">Spanish</option>
+      <option value="ru">Russian</option>
+      <option value="ko">Korean</option>
+      <option value="fr">French</option>
+      <option value="ja">Japanese</option>
+      <option value="pt">Portuguese</option>
+      <option value="tr">Turkish</option>
+      <option value="pl">Polish</option>
+      <option value="ca">Catalan</option>
+      <option value="nl">Dutch</option>
+      <option value="ar">Arabic</option>
+      <option value="sv">Swedish</option>
+      <option value="it">Italian</option>
+      <option value="id">Indonesian</option>
+      <option value="hi">Hindi</option>
+      <option value="fi">Finnish</option>
+      <option value="vi">Vietnamese</option>
+      <option value="he">Hebrew</option>
+      <option value="uk">Ukrainian</option>
+      <option value="el">Greek</option>
+      <option value="ms">Malay</option>
+      <option value="cs">Czech</option>
+      <option value="ro">Romanian</option>
+      <option value="da">Danish</option>
+      <option value="hu">Hungarian</option>
+      <option value="ta">Tamil</option>
+      <option value="no">Norwegian</option>
+      <option value="th">Thai</option>
+      <option value="ur">Urdu</option>
+      <option value="hr">Croatian</option>
+      <option value="bg">Bulgarian</option>
+      <option value="lt">Lithuanian</option>
+      <option value="la">Latin</option>
+      <option value="mi">Maori</option>
+      <option value="ml">Malayalam</option>
+      <option value="cy">Welsh</option>
+      <option value="sk">Slovak</option>
+      <option value="te">Telugu</option>
+      <option value="fa">Persian</option>
+      <option value="lv">Latvian</option>
+      <option value="bn">Bengali</option>
+      <option value="sr">Serbian</option>
+      <option value="az">Azerbaijani</option>
+      <option value="sl">Slovenian</option>
+      <option value="kn">Kannada</option>
+      <option value="et">Estonian</option>
+      <option value="mk">Macedonian</option>
+      <option value="br">Breton</option>
+      <option value="eu">Basque</option>
+      <option value="is">Icelandic</option>
+      <option value="hy">Armenian</option>
+      <option value="ne">Nepali</option>
+      <option value="mn">Mongolian</option>
+      <option value="bs">Bosnian</option>
+      <option value="kk">Kazakh</option>
+      <option value="sq">Albanian</option>
+      <option value="sw">Swahili</option>
+      <option value="gl">Galician</option>
+      <option value="mr">Marathi</option>
+      <option value="pa">Punjabi</option>
+      <option value="si">Sinhala</option>
+      <option value="km">Khmer</option>
+      <option value="sn">Shona</option>
+      <option value="yo">Yoruba</option>
+      <option value="so">Somali</option>
+      <option value="af">Afrikaans</option>
+      <option value="oc">Occitan</option>
+      <option value="ka">Georgian</option>
+      <option value="be">Belarusian</option>
+      <option value="tg">Tajik</option>
+      <option value="sd">Sindhi</option>
+      <option value="gu">Gujarati</option>
+      <option value="am">Amharic</option>
+      <option value="yi">Yiddish</option>
+      <option value="lo">Lao</option>
+      <option value="uz">Uzbek</option>
+      <option value="fo">Faroese</option>
+      <option value="ht">Haitian Creole</option>
+      <option value="ps">Pashto</option>
+      <option value="tk">Turkmen</option>
+      <option value="nn">Norwegian Nynorsk</option>
+      <option value="mt">Maltese</option>
+      <option value="sa">Sanskrit</option>
+      <option value="lb">Luxembourgish</option>
+      <option value="my">Burmese</option>
+      <option value="bo">Tibetan</option>
+      <option value="tl">Tagalog</option>
+      <option value="mg">Malagasy</option>
+      <option value="as">Assamese</option>
+      <option value="tt">Tatar</option>
+      <option value="haw">Hawaiian</option>
+      <option value="ln">Lingala</option>
+      <option value="ha">Hausa</option>
+      <option value="ba">Bashkir</option>
+      <option value="jw">Javanese</option>
+      <option value="su">Sundanese</option>
+    </select>
+  </div>
+  
+    <div class="col">                  <!-- ← NEW: second column for the task selector -->
+      <select id="taskSelect" disabled>   <!-- disabled by default, will be enabled only for multilingual models -->
+          <option value="transcribe">Transcribe</option>
+          <option value="translate">Translate → English</option>
+        </select>                           <!-- // ← NEW -->
+      </div>
+    </div>                               <!-- // ← NEW -->
+  </div>
+  
+  <!-- ==== Generation parameters (optional) ==== -->
+  <div class="field">
+    <label class="has-tooltip">
+      Generation parameters (optional)
+      <span class="info-icon" tabindex="0"
+            data-tooltip="Optional parameters that influence the decoding process.">🛈</span>
+    </label>
+
+    <div class="gen‑params">
+      <div>
+        <label class="has-tooltip"
+               for="tempInput">
+          Temperature (0‑1)
+          <span class="info-icon" tabindex="0"
+                data-tooltip="Controls randomness of the output; lower values make the transcription more deterministic.">🛈</span>
+        </label>
+        <input type="number" id="tempInput" min="0" max="1" step="0.01" placeholder="0.0" value="0.6">
+      </div>
+      <div>
+        <label class="has-tooltip"
+               for="toppInput">
+          Top‑p (0‑1)
+          <span class="info-icon" tabindex="0"
+                data-tooltip="Nucleus sampling threshold – only the most probable tokens whose cumulative probability ≤ p are considered.">🛈</span>
+        </label>
+        <input type="number" id="toppInput" min="0" max="1" step="0.01" placeholder="1.0" value="1.0">
+      </div>
+      <div>
+        <label class="has-tooltip"
+               for="topkInput">
+          Top‑k (int)
+          <span class="info-icon" tabindex="0"
+                data-tooltip="Limits sampling to the *k* most likely tokens at each step; set to 0 to disable.">🛈</span>
+        </label>
+        <input type="number" id="topkInput" min="0" max="51864" step="1" placeholder="0" value="0">
+      </div>
+      <div>
+        <label class="has-tooltip"
+               for="repPenInput">
+          Repetition penalty
+          <span class="info-icon" tabindex="0"
+                data-tooltip="Penalises tokens that have already appeared, reducing repeated words in the result.">🛈</span>
+        </label>
+        <input type="number" id="repPenInput" min="1" max="2" step="0.1" placeholder="1.0" value="1.0">
+      </div>
+      <div>
+        <label class="has-tooltip"
+               for="maxTokensInput">
+          Max new tokens
+          <span class="info-icon" tabindex="0"
+                data-tooltip="Maximum number of tokens Whisper may generate for each chunk (max 448).">🛈</span>
+        </label>
+        <input type="number"
+               id="maxTokensInput"
+               min="1"
+               max="448"
+               step="1"
+               placeholder="256"
+               value="20">
+      </div>
+    </div>
+  </div>
+
+  <!-- ==== Transcribe / Stop buttons ==== -->
+  <div class="row">
+    <div class="col"><button id="genBtn" disabled>Transcribe</button></div>
+    <div class="col"><button id="stopBtn" disabled>Stop</button></div>
+  </div>
+
+  <!-- ==== Transcription result ==== -->
+  <div class="field">
+    <label class="has-tooltip">
+      Transcription result
+      <span class="info-icon" tabindex="0"
+            data-tooltip="Displays the final text produced by Whisper after processing the audio.">🛈</span>
+    </label>
+    <pre id="transcript"></pre>
+  </div>
+
+  <!-- ==== Copy / Clear ==== -->
+  <div class="row">
+    <div class="col"><button id="copyBtn">Copy</button></div>
+    <div class="col"><button id="clearBtn">Clear</button></div>
+  </div>
+
+  <!-- ==== Log ==== -->
+  <div class="field">
+    <label class="has-tooltip">
+      Event Log
+      <span class="info-icon" tabindex="0"
+            data-tooltip="Shows progress messages, errors and other runtime information.">🛈</span>
+    </label>
+    <pre id="log">Ready. (Run this page from a web server — see header)</pre>
+  </div>
+</div>
+
+</body>
+</html>
